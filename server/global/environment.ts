@@ -8,7 +8,7 @@ let URL_DB:string;
 if(PROCESS_ENV_NODE==="dev"){
     URL_DB='mongodb://localhost:27017/papago';
 }else{
-    URL_DB='mongodb+srv://juan:SrfeEVpYxCV3DsxC@cluster0-rl4vt.mongodb.net/RepairGo';
+    URL_DB=String(process.env.MONGO_URI);
 }
 
 //conexión con cloudinary

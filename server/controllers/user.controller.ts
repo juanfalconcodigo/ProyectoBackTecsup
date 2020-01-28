@@ -43,7 +43,7 @@ class UserController{
     }
     
     postUsuario=async(req:Request,res:Response):Promise<any>=>{
-        const{first_name,last_name,email,password}=req.body;
+        const{first_name,last_name,email,password,role}=req.body;
         try{
             const result=await cloudinary.v2.uploader.upload(req.file.path,{
                 folder: 'PapaGo',
@@ -64,6 +64,7 @@ class UserController{
                 first_name,
                 last_name,
                 email,
+                role,
                 password:bcrypt.hashSync(password,10),
                 photo_url:result.url,
                 photo_public_id:result.public_id
@@ -158,29 +159,15 @@ class UserController{
             })
         });
     }
-
+    //este servicio solo cambia los detalles de usuario no el password
     putUserId=async(req:Request,res:Response):Promise<any>=>{
-        //esclusivo para datos normales ojo enviar si o si el password
-        let{id}=req.params;
-        if(!req.body.password){
-            return res.status(400).json({
-                ok:false,
-                err:{
-                    message:`Deve ingresar la  contraseña , deve tener 6 carácteres como mínimo`
-                }
-            });
-        }
-        if(req.body.password.length<6){
-            return res.status(400).json({
-                ok:false,
-                err:{
-                    message:`La contraseña deve tener 6 carácteres como mínimo`
-                }
-            });
-        }
+        const{id}=req.params;
+        const{first_name,last_name,email,role}=req.body;
         let data={
-            ...req.body, 
-            password:bcrypt.hashSync(req.body.password,10), 
+            first_name,
+            last_name,
+            email,
+            role
         }
         User.findByIdAndUpdate(id,data,{new:true,runValidators:true,context:'query'},(err,usuarioDB:UserI | null)=>{
             if(err){
@@ -201,22 +188,68 @@ class UserController{
                 ok:true,
                 usuario:usuarioDB
             });
+        });
+    }
+    /*exclusivo del password */
+    putUserIdPassword=async(req:Request,res:Response):Promise<any>=>{
+        const{id}=req.params;
+        const{password}=req.body;
+        if(!password){
+            return res.status(400).json({
+                ok:false,
+                err:{
+                    message:`Deve ingresar la  contraseña , deve tener 6 carácteres como mínimo`
+                }
+            });
+        }
+        if(password.length<6){
+            return res.status(400).json({
+                ok:false,
+                err:{
+                    message:`La contraseña deve tener 6 carácteres como mínimo`
+                }
+            });
+        }
+        const data={
+            password:bcrypt.hashSync(password,10)
+        }
 
+        User.findByIdAndUpdate(id,data,{new:true,runValidators:true,context:'query'},async(err,usuarioDB:UserI | null):Promise<Response>=>{
+            if(err){
+                return await res.status(500).json({
+                    ok:false,
+                    err
+                });
+            }
+            if(!usuarioDB){
+                return await res.status(400).json({
+                    ok:false,
+                    err:{
+                        message:`No existe un usuario con el id : ${id}`
+                    }
+                });
+            }
+            return await res.status(202).json({
+                ok:true,
+                usuario:usuarioDB
+            });
         });
     }
     
     putUserIdPhoto=async(req:Request,res:Response):Promise<any>=>{
-        //exclusivo para form-data
+        //exclusivo para form-data y tener en cuenta lo del req.file
         let{id}=req.params;
         try{
             User.findById(id,async(err,usuarioDB:UserI | null)=>{
                 if(err){
+                    await (!req.file)?'No existe archivo':fs.unlink(req.file.path);
                     return await res.status(500).json({
                         ok:false,
                         err
                     });
                 }
                 if(!usuarioDB){
+                    await (!req.file)?'No existe archivo':fs.unlink(req.file.path);
                     return await res.status(400).json({
                         ok:false,
                         err:{
@@ -226,6 +259,7 @@ class UserController{
                 }
 
                 if(!req.file){
+                    //aqui si no hay archivo
                     return await res.status(400).json({
                         ok:false,
                         err:{
@@ -276,7 +310,6 @@ class UserController{
             });
         }
     }
-
 
 }
 

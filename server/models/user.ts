@@ -1,7 +1,7 @@
 import { Schema,model,Model, Document } from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 let valoresValidos:{values:String[],message:String}={
-    values:['USER_NORMAL','USER_ADMIN','SYSTEM'],
+    values:['USER_NORMAL','USER_ADMIN','USER_SPECIALIST'],
     message:'{VALUE} no es un rol permitido'
 }
 const userSchema=new Schema({
@@ -25,9 +25,8 @@ const userSchema=new Schema({
     },
     role:{
         type:String,
-        required:false,
+        required:[true,'El rol es necesario'],
         uppercase:true,
-        default:'USER_NORMAL',
         enum:valoresValidos
     },
     is_active:{
@@ -44,7 +43,13 @@ const userSchema=new Schema({
         type:String,
         required:true,
         lowercase:true
+    },
+    date:{
+        type:Date,
+        required:false,
+        default:Date.now
     }
+
 });
 
 userSchema.plugin(uniqueValidator,{message:`{PATH} debe ser único`});
@@ -66,6 +71,7 @@ interface UserI extends Document{
     is_active:boolean;
     photo_url:string;
     photo_public_id:string;
+    date:Date;
 }
 
 const User:Model<UserI>= model<UserI>('User',userSchema);

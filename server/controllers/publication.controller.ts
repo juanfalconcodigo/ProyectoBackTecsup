@@ -15,7 +15,7 @@ class PublicationController{
 
     getPublication=async(req:Request,res:Response):Promise<any>=>{
 
-        Publication.find({is_active:true}).sort({'date':-1}).populate('user').exec(async(err,publications:PublicationI[]):Promise<Response | undefined>=>{
+        Publication.find({is_active:true}).sort({'date':-1}).populate('category','name').populate('user','role first_name photo_url email').exec(async(err,publications:PublicationI[]):Promise<Response | undefined>=>{
             if(err){
                 return await res.status(500).json({
                     ok:false,
@@ -46,7 +46,7 @@ class PublicationController{
 
     getPublicationId=async(req:Request,res:Response):Promise<any>=>{
         let{id}=req.params;
-        Publication.findById(id).populate('user','role first_name photo_url email').exec(async(err,publicationDB:PublicationI):Promise<Response|undefined>=>{
+        Publication.findById(id).populate('category','name').populate('user','role first_name photo_url email').exec(async(err,publicationDB:PublicationI):Promise<Response|undefined>=>{
             if(err){
                 return await res.status(500).json({
                     ok:false,
@@ -74,7 +74,7 @@ class PublicationController{
 
 
     postPublication=async(req:Request,res:Response):Promise<any>=>{
-        const {description}=req.body;
+        const {description,category,cellphone}=req.body;
         try{
 
             const result=await cloudinary.v2.uploader.upload(req.file.path,{
@@ -84,6 +84,8 @@ class PublicationController{
     
             const publication=new Publication({
                 description,
+                cellphone,
+                category,
                 photo_url:result.url,
                 photo_public_id:result.public_id,
                 user:(<any>req).usuario.usuario
@@ -129,6 +131,58 @@ class PublicationController{
         }
     }
 
+    putIdLike=async(req:Request,res:Response):Promise<any>=>{
+        const{id,type}=req.params;
+        const actiontypes:RegExp=/increment|decrement/;
+        if(!actiontypes.test(type)){
+            return res.status(400).json({
+                ok:false,
+                err:{
+                    message:`Solo se aceptan estos types :${actiontypes}`
+                }
+            });
+        }
+        Publication.findById(id,(err,publicationDB:PublicationI)=>{
+            if(err){
+                return res.status(500).json({
+                    ok:false,
+                    err
+                });
+            }
+            if(!publicationDB){
+                return res.status(400).json({
+                    ok:false,
+                    err:{
+                        message:`No existe una publicación con el id : ${id}`
+                    }
+                });
+            }
+
+            (type==='increment')?publicationDB.likes+=1:(publicationDB.likes)>0?publicationDB.likes-=1:publicationDB.likes=0;
+            publicationDB.save(async(err,publication:PublicationI):Promise<Response>=>{
+                if(err){
+                    return await res.status(500).json({
+                        ok:false,
+                        err
+                    });
+                }
+                if(!publication){
+                    return await res.status(400).json({
+                        ok:false,
+                        err:{
+                            message:`Error en la petición`
+                        }
+                    });
+                }
+                return res.status(202).json({
+                    ok:true,
+                    publication
+                });
+            });
+        });
+        
+    }
+
     putPublicationId=async(req:Request,res:Response):Promise<any>=>{
         //esclusivo para datos normales ojo
         const{id}=req.params;
@@ -162,12 +216,8 @@ class PublicationController{
             return await res.status(202).json({
                 ok:true,
                 publicatonDB
-            })
-
+            });
         });
-
-
-
     }
 
     putPublicationIdPhoto=async(req:Request,res:Response):Promise<any>=>{
@@ -292,7 +342,7 @@ class PublicationController{
       .exec(function (err, results) {
           ...
       }); */
-        Publication.find({$and:[{user:id},{is_active:true}]}).sort({'date':-1}).exec(async(err,publications:PublicationI[]):Promise<Response | undefined>=>{
+        Publication.find({$and:[{user:id},{is_active:true}]}).sort({'date':-1}).populate('category','name').populate('user','role first_name photo_url email').exec(async(err,publications:PublicationI[]):Promise<Response | undefined>=>{
 
             if(err){
                 return await res.status(500).json({

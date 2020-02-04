@@ -19,6 +19,7 @@ class PublicationRouter{
         this.router.route('/put/:id').put(verificaToken,this.publicationController.putPublicationId);
         this.router.route('/put/photo/:id').put([verificaToken,fileUpload],this.publicationController.putPublicationIdPhoto);
         this.router.route('/list/user/:id').get(verificaToken,this.publicationController.getPublicationUserId);
+        this.router.route('/put/:id/like/:type').put(verificaToken,this.publicationController.putIdLike);
         
     }
 

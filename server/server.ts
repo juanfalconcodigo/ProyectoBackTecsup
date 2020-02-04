@@ -11,9 +11,11 @@ import { UserRouter } from './routes/user';
 import { SocketRouter } from './routes/socket';
 import { PublicationRouter } from './routes/publication';
 import { CommetRouter } from './routes/comment';
+import { CategoryRouter } from './routes/category';
 
 //socket action
 import { emitConnect,emitDisconnect,onMenssage,configUser,connectClient,disconnectClient,obtainUsers } from './socket/socket';
+
 
 
 
@@ -50,7 +52,8 @@ class  Server{
         this.app.use('/user',new UserRouter().router);
         this.app.use('/socket',new SocketRouter().router);
         this.app.use('/publication',new PublicationRouter().router);
-        this.app.use('/commet',new CommetRouter().router)
+        this.app.use('/commet',new CommetRouter().router);
+        this.app.use('/category',new CategoryRouter().router);
 
     }
     private listenSockets(){

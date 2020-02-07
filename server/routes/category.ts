@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { CategoryController } from '../controllers/category.controller';
+import { verificaToken,verificaRolAdmin} from '../middlewares/authentication';
 
 class CategoryRouter{
     router:Router;
@@ -9,9 +10,9 @@ class CategoryRouter{
         this.routes();
     }
     routes(){
-        this.router.route('/list').get(this.categoryController.getCategory);
-        this.router.route('/create').post(this.categoryController.postCategory);
-        this.router.route('/delete/:id').delete(this.categoryController.deleteCategoryId);
+        this.router.route('/list').get(verificaToken,this.categoryController.getCategory);
+        this.router.route('/create').post(verificaToken,this.categoryController.postCategory);
+        this.router.route('/delete/:id').delete(verificaToken,this.categoryController.deleteCategoryId);
     }
 
 }

@@ -50,8 +50,8 @@ const emitConnect=(client:Socket,io:socketIO.Server)=>{
 const emitDisconnect=(client:Socket,io:socketIO.Server)=>{
     client.broadcast.emit('client-disconnect',{info:'Cliente desconectado'});
 }
-const onMenssage=(client:Socket,io:socketIO.Server)=>{
-    client.on('enviar-mensaje',(payload:{mensaje:String,de:string})=>{
+const onMessage=(client:Socket,io:socketIO.Server)=>{
+    client.on('enviar-mensaje',(payload:{message:String,first_name:string,photo_url:string,role:string})=>{
         console.log('mensaje recibido:',payload);
         io.emit('mensaje-nuevo',payload);
     });
@@ -61,7 +61,7 @@ const onMenssage=(client:Socket,io:socketIO.Server)=>{
 export{
     emitConnect,
     emitDisconnect,
-    onMenssage,
+    onMessage,
     configUser,
     usersConnect,
     connectClient,

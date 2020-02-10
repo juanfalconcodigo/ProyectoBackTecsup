@@ -14,7 +14,7 @@ import { CommetRouter } from './routes/comment';
 import { CategoryRouter } from './routes/category';
 
 //socket action
-import { emitConnect,emitDisconnect,onMenssage,configUser,connectClient,disconnectClient,obtainUsers } from './socket/socket';
+import { emitConnect,emitDisconnect,onMessage,configUser,connectClient,disconnectClient,obtainUsers } from './socket/socket';
 
 
 
@@ -65,7 +65,7 @@ class  Server{
                 emitDisconnect(client,this.io);
             });
             emitConnect(client,this.io);
-            onMenssage(client,this.io);
+            onMessage(client,this.io);
             configUser(client,this.io);
             connectClient(client,this.io);
             disconnectClient(client,this.io);

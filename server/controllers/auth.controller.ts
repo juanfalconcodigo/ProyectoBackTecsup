@@ -1,9 +1,12 @@
 import {Request,Response} from 'express';
-import { User } from '../models/user';
+import { User,UserI } from '../models/user';
+import { Menu } from '../classes/menu';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import { SEED,CADUCIDAD_TOKEN } from '../global/environment';
+
+const menu=new Menu();
 
 class AuthController{
     
@@ -13,7 +16,7 @@ class AuthController{
 
     postLogin=async(req:Request,res:Response):Promise<any>=>{
         let{email,password}=req.body;
-        User.findOne({email},async(err,usuarioDB)=>{
+        User.findOne({email},async(err,usuarioDB:UserI)=>{
 
             if(err){
                 return await res.status(500).json({
@@ -45,7 +48,8 @@ class AuthController{
             return await res.status(202).json({
                 ok:true,
                 usuario:usuarioDB,
-                token
+                token,
+                menu:menu.getMenu(usuarioDB.role)
             });
 
         });
